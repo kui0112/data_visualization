@@ -1,0 +1,756 @@
+{
+  "nodes": [
+    {
+      "id": "0",
+      "data": {
+        "branch": "0",
+        "text": "苹果",
+        "level": 0,
+        "type": "root"
+      }
+    },
+    {
+      "id": "1",
+      "data": {
+        "branch": "1",
+        "text": "名称",
+        "level": 1,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "2",
+      "data": {
+        "branch": "1",
+        "text": "苹果",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "3",
+      "data": {
+        "branch": "2",
+        "text": "用途",
+        "level": 1,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "4",
+      "data": {
+        "branch": "2",
+        "text": "食物",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "5",
+      "data": {
+        "branch": "2",
+        "text": "医药",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "6",
+      "data": {
+        "branch": "2",
+        "text": "景观",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "7",
+      "data": {
+        "branch": "2",
+        "text": "文化象征",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "8",
+      "data": {
+        "branch": "3",
+        "text": "历史",
+        "level": 1,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "9",
+      "data": {
+        "branch": "3",
+        "text": "起源",
+        "level": 2,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "10",
+      "data": {
+        "branch": "3",
+        "text": "中亚地区",
+        "level": 3,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "11",
+      "data": {
+        "branch": "3",
+        "text": "驯化时间",
+        "level": 2,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "12",
+      "data": {
+        "branch": "3",
+        "text": "约10,000年前",
+        "level": 3,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "13",
+      "data": {
+        "branch": "3",
+        "text": "传播路径",
+        "level": 2,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "14",
+      "data": {
+        "branch": "3",
+        "text": "丝绸之路",
+        "level": 3,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "15",
+      "data": {
+        "branch": "3",
+        "text": "重要事件",
+        "level": 2,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "16",
+      "data": {
+        "branch": "3",
+        "text": "0",
+        "level": 3,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "17",
+      "data": {
+        "branch": "3",
+        "text": "时间",
+        "level": 4,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "18",
+      "data": {
+        "branch": "3",
+        "text": "古罗马时期",
+        "level": 5,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "19",
+      "data": {
+        "branch": "3",
+        "text": "内容",
+        "level": 4,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "20",
+      "data": {
+        "branch": "3",
+        "text": "被视为珍贵水果，广泛种植和贸易",
+        "level": 5,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "21",
+      "data": {
+        "branch": "3",
+        "text": "1",
+        "level": 3,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "22",
+      "data": {
+        "branch": "3",
+        "text": "时间",
+        "level": 4,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "23",
+      "data": {
+        "branch": "3",
+        "text": "中世纪欧洲",
+        "level": 5,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "24",
+      "data": {
+        "branch": "3",
+        "text": "内容",
+        "level": 4,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "25",
+      "data": {
+        "branch": "3",
+        "text": "成为重要的宗教象征，出现在许多艺术作品中",
+        "level": 5,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "26",
+      "data": {
+        "branch": "3",
+        "text": "2",
+        "level": 3,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "27",
+      "data": {
+        "branch": "3",
+        "text": "时间",
+        "level": 4,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "28",
+      "data": {
+        "branch": "3",
+        "text": "近代",
+        "level": 5,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "29",
+      "data": {
+        "branch": "3",
+        "text": "内容",
+        "level": 4,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "30",
+      "data": {
+        "branch": "3",
+        "text": "通过殖民扩张传播到世界各地，成为全球最受欢迎的水果之一",
+        "level": 5,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "31",
+      "data": {
+        "branch": "4",
+        "text": "种类",
+        "level": 1,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "32",
+      "data": {
+        "branch": "4",
+        "text": "富士苹果",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "33",
+      "data": {
+        "branch": "4",
+        "text": "嘎啦苹果",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "34",
+      "data": {
+        "branch": "4",
+        "text": "红富士苹果",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "35",
+      "data": {
+        "branch": "4",
+        "text": "金冠苹果",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "36",
+      "data": {
+        "branch": "4",
+        "text": "香甜苹果",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "37",
+      "data": {
+        "branch": "5",
+        "text": "营养价值",
+        "level": 1,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "38",
+      "data": {
+        "branch": "5",
+        "text": "富含维生素C",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "39",
+      "data": {
+        "branch": "5",
+        "text": "含有膳食纤维",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "40",
+      "data": {
+        "branch": "5",
+        "text": "提供多种矿物质",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "41",
+      "data": {
+        "branch": "5",
+        "text": "低热量",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "42",
+      "data": {
+        "branch": "6",
+        "text": "文化象征",
+        "level": 1,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "43",
+      "data": {
+        "branch": "6",
+        "text": "健康、幸福",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "44",
+      "data": {
+        "branch": "6",
+        "text": "爱情、美德",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "45",
+      "data": {
+        "branch": "6",
+        "text": "知识、智慧",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "46",
+      "data": {
+        "branch": "6",
+        "text": "和平、和谐",
+        "level": 2,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "47",
+      "data": {
+        "branch": "7",
+        "text": "传说故事",
+        "level": 1,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "48",
+      "data": {
+        "branch": "7",
+        "text": "0",
+        "level": 2,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "49",
+      "data": {
+        "branch": "7",
+        "text": "名称",
+        "level": 3,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "50",
+      "data": {
+        "branch": "7",
+        "text": "苹果与伊甸园",
+        "level": 4,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "51",
+      "data": {
+        "branch": "7",
+        "text": "内容",
+        "level": 3,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "52",
+      "data": {
+        "branch": "7",
+        "text": "根据圣经记载，亚当和夏娃在伊甸园中吃了禁果，而这禁果就是苹果。从此人类开始犯罪，被驱逐出乐园。",
+        "level": 4,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "53",
+      "data": {
+        "branch": "7",
+        "text": "1",
+        "level": 2,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "54",
+      "data": {
+        "branch": "7",
+        "text": "名称",
+        "level": 3,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "55",
+      "data": {
+        "branch": "7",
+        "text": "苹果与爱情",
+        "level": 4,
+        "type": "leaf"
+      }
+    },
+    {
+      "id": "56",
+      "data": {
+        "branch": "7",
+        "text": "内容",
+        "level": 3,
+        "type": "sub"
+      }
+    },
+    {
+      "id": "57",
+      "data": {
+        "branch": "7",
+        "text": "在许多文化中，苹果被视为爱情的象征。例如，希腊神话中，爱神阿芙罗狄蒂曾用苹果作为礼物送给帕里斯王子。",
+        "level": 4,
+        "type": "leaf"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "0",
+      "target": "1"
+    },
+    {
+      "source": "1",
+      "target": "2"
+    },
+    {
+      "source": "0",
+      "target": "3"
+    },
+    {
+      "source": "3",
+      "target": "4"
+    },
+    {
+      "source": "3",
+      "target": "5"
+    },
+    {
+      "source": "3",
+      "target": "6"
+    },
+    {
+      "source": "3",
+      "target": "7"
+    },
+    {
+      "source": "0",
+      "target": "8"
+    },
+    {
+      "source": "8",
+      "target": "9"
+    },
+    {
+      "source": "9",
+      "target": "10"
+    },
+    {
+      "source": "8",
+      "target": "11"
+    },
+    {
+      "source": "11",
+      "target": "12"
+    },
+    {
+      "source": "8",
+      "target": "13"
+    },
+    {
+      "source": "13",
+      "target": "14"
+    },
+    {
+      "source": "8",
+      "target": "15"
+    },
+    {
+      "source": "15",
+      "target": "16"
+    },
+    {
+      "source": "16",
+      "target": "17"
+    },
+    {
+      "source": "17",
+      "target": "18"
+    },
+    {
+      "source": "16",
+      "target": "19"
+    },
+    {
+      "source": "19",
+      "target": "20"
+    },
+    {
+      "source": "15",
+      "target": "21"
+    },
+    {
+      "source": "21",
+      "target": "22"
+    },
+    {
+      "source": "22",
+      "target": "23"
+    },
+    {
+      "source": "21",
+      "target": "24"
+    },
+    {
+      "source": "24",
+      "target": "25"
+    },
+    {
+      "source": "15",
+      "target": "26"
+    },
+    {
+      "source": "26",
+      "target": "27"
+    },
+    {
+      "source": "27",
+      "target": "28"
+    },
+    {
+      "source": "26",
+      "target": "29"
+    },
+    {
+      "source": "29",
+      "target": "30"
+    },
+    {
+      "source": "0",
+      "target": "31"
+    },
+    {
+      "source": "31",
+      "target": "32"
+    },
+    {
+      "source": "31",
+      "target": "33"
+    },
+    {
+      "source": "31",
+      "target": "34"
+    },
+    {
+      "source": "31",
+      "target": "35"
+    },
+    {
+      "source": "31",
+      "target": "36"
+    },
+    {
+      "source": "0",
+      "target": "37"
+    },
+    {
+      "source": "37",
+      "target": "38"
+    },
+    {
+      "source": "37",
+      "target": "39"
+    },
+    {
+      "source": "37",
+      "target": "40"
+    },
+    {
+      "source": "37",
+      "target": "41"
+    },
+    {
+      "source": "0",
+      "target": "42"
+    },
+    {
+      "source": "42",
+      "target": "43"
+    },
+    {
+      "source": "42",
+      "target": "44"
+    },
+    {
+      "source": "42",
+      "target": "45"
+    },
+    {
+      "source": "42",
+      "target": "46"
+    },
+    {
+      "source": "0",
+      "target": "47"
+    },
+    {
+      "source": "47",
+      "target": "48"
+    },
+    {
+      "source": "48",
+      "target": "49"
+    },
+    {
+      "source": "49",
+      "target": "50"
+    },
+    {
+      "source": "48",
+      "target": "51"
+    },
+    {
+      "source": "51",
+      "target": "52"
+    },
+    {
+      "source": "47",
+      "target": "53"
+    },
+    {
+      "source": "53",
+      "target": "54"
+    },
+    {
+      "source": "54",
+      "target": "55"
+    },
+    {
+      "source": "53",
+      "target": "56"
+    },
+    {
+      "source": "56",
+      "target": "57"
+    }
+  ]
+}
