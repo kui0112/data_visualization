@@ -17,6 +17,7 @@
     "chroma-js": "^2.6.1-0",
     "less": "^4.2.0",
     "less-loader": "^12.2.0",
+    "mitt": "^3.0.1",
     "vite-plugin-singlefile": "^2.0.2",
     "vite-plugin-string": "^1.2.3",
     "vue": "^3.4.31",

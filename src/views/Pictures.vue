@@ -2,15 +2,19 @@
 import {onBeforeUnmount, onMounted, ref} from "vue";
 import * as service from "../scripts/Service"
 import {useRouter} from "vue-router";
+import {eventbus} from "../scripts/Utils";
+import {EventMessage} from "../scripts/EventMessages";
 
 interface Segment {
   id: string
   image: string
+  video: string
   subtitle: string
 }
 
 const router = useRouter()
 const img = ref<HTMLImageElement | null>(null)
+const video = ref<HTMLVideoElement | null>(null)
 const subtitleDiv = ref<HTMLDivElement | null>(null)
 const spinningDiv = ref<HTMLDivElement | null>(null)
 
@@ -20,21 +24,52 @@ let segments: Array<Segment> = []
 let cursor: number = 0
 let timer: NodeJS.Timeout | null = null
 let timerInterval: number = 6 * 1000
+let displayMode = "image"
+
+function showImage(seg: Segment) {
+  video.value.style.display = "none"
+  img.value.style.display = "block"
+  img.value.src = service.apiAddress(seg.image)
+  img.value.onload = () => {
+    let subtitle = seg.subtitle
+    let maxWidth = img.value.width
+    subtitleDiv.value.style.maxWidth = `${maxWidth - 20}px`
+    subtitleDiv.value.textContent = subtitle
+    cursor = (cursor + 1) % segments.length
+  }
+}
+
+function showVideo(seg: Segment) {
+  img.value.style.display = "none"
+  video.value.style.display = "block"
+  video.value.src = service.apiAddress(seg.video)
+  video.value.controls = false
+  video.value.addEventListener("loadedmetadata", () => {
+    let subtitle = seg.subtitle
+    let maxWidth = video.value.clientWidth
+    subtitleDiv.value.style.maxWidth = `${maxWidth - 20}px`
+    subtitleDiv.value.textContent = subtitle
+    cursor = (cursor + 1) % segments.length
+  }, {once: true});
+  video.value.load()
+}
 
 function updateImageDisplay() {
-  if (img.value && segments && segments.length > cursor) {
-    spinningDiv.value.style.visibility = "hidden"
-    img.value.style.visibility = "visible"
-    subtitleDiv.value.style.visibility = "visible"
+  if (!img.value || !segments || segments.length <= cursor) return
 
-    const seg = segments[cursor]
-    img.value.src = service.apiAddress(seg.image)
-    img.value.onload = () => {
-      let subtitle = seg.subtitle
-      let maxWidth = img.value.width
-      subtitleDiv.value.style.maxWidth = `${maxWidth - 20}px`
-      subtitleDiv.value.textContent = subtitle
-      cursor = (cursor + 1) % segments.length
+  spinningDiv.value.style.visibility = "hidden"
+  subtitleDiv.value.style.visibility = "visible"
+
+  const seg = segments[cursor]
+  if (displayMode === "image") {
+    showImage(seg)
+  } else if (displayMode === "video") {
+    showVideo(seg)
+  } else {
+    if (Math.random() > 0.5) {
+      showImage(seg)
+    } else {
+      showVideo(seg)
     }
   }
 }
@@ -73,19 +108,26 @@ const onMessage = async (e: MessageEvent) => {
   }
 }
 
-onMounted(async () => {
+function showSpinning() {
   spinningDiv.value.style.visibility = "visible"
   subtitleDiv.value.style.visibility = "hidden"
-  img.value.style.visibility = "hidden"
-  img.value.onerror = (e) => {
-    spinningDiv.value.style.visibility = "visible"
-    subtitleDiv.value.style.visibility = "hidden"
-    img.value.style.visibility = "hidden"
-  }
+  img.value.style.display = "none"
+  video.value.style.display = "none"
+}
+
+onMounted(async () => {
+  eventbus.on("Pictures:changeDisplayMode", async (e: EventMessage) => {
+    console.log(e)
+    displayMode = e.data
+  })
+
+  showSpinning()
+  img.value.onerror = showSpinning
+  video.value.onerror = showSpinning
 
   ws = await service.ws_connect()
   if (ws) {
-    ws.onopen = async (e: MessageEvent) => {
+    ws.onopen = async () => {
       console.log("ws connected.")
     }
     ws.onmessage = onMessage
@@ -119,6 +161,7 @@ onBeforeUnmount(async () => {
       <a-spin tip="Loading..." :spinning="true" size="large"></a-spin>
     </div>
     <img ref="img" alt="image" class="image" src=""/>
+    <video ref="video" class="video" autoplay loop muted playsinline></video>
     <div ref="subtitleDiv" class="subtitle"></div>
   </div>
 </template>
@@ -159,7 +202,13 @@ onBeforeUnmount(async () => {
   background-color: rgba(0, 0, 0, 1);
 
   .image {
-    display: block;
+    display: none;
+    width: auto;
+    height: 100%;
+  }
+
+  .video {
+    display: none;
     width: auto;
     height: 100%;
   }

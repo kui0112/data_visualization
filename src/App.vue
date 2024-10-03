@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Nav from "./components/Nav.vue";
 import {onMounted, ref} from "vue";
-// import TestController from "./components/TestController.vue";
+import TestTools from "./components/TestTools.vue";
 
 const navDiv = ref<HTMLDivElement | null>(null)
 const routerViewDiv = ref<HTMLDivElement | null>(null)
@@ -104,9 +104,9 @@ const exitFullscreen = () => {
   <div class="router-view" ref="routerViewDiv">
     <router-view></router-view>
   </div>
-  <!--  <div class="test-controller">-->
-  <!--    <TestController></TestController>-->
-  <!--  </div>-->
+  <div class="test-tools">
+    <TestTools></TestTools>
+  </div>
 </template>
 
 <style lang="less" scoped>
@@ -118,15 +118,15 @@ const exitFullscreen = () => {
 }
 
 .router-view {
-  width: 100%;
+  width: 80%;
   height: 90%;
-  //float: left;
+  float: left;
   overflow: hidden;
 }
 
-//.test-controller {
-//  width: 20%;
-//  height: 95%;
-//  float: right;
-//}
+.test-tools {
+  width: 20%;
+  height: 95%;
+  float: right;
+}
 </style>
