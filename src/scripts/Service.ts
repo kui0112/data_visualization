@@ -1,7 +1,7 @@
 const local = 'localhost:9999'
 const remote = '103.40.13.76:52797'
 
-const host: string = remote
+const host: string = local
 
 export const apiAddress = (url: string) => `http://${host}${url}`
 export const wsAddress = (url: string) => `ws://${host}${url}`

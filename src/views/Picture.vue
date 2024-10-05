@@ -8,11 +8,14 @@ const image = ref<HTMLImageElement | null>(null)
 const subtitleDiv = ref<HTMLDivElement | null>(null)
 const spinningDiv = ref<HTMLDivElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
+const audio = ref<HTMLAudioElement | null>(null)
 
 let context: CanvasRenderingContext2D | null = null
 let aliveDuration: number | null = null
 let animationId: number = Date.now()
 let mode: string = "typewriter"
+let audioAvailable = false
+let audioLoaded = false
 
 function measureText(font: string, text: string) {
   context.font = font
@@ -52,6 +55,17 @@ async function subtitleAnimation(subtitle: string) {
 
     if (subtitleDiv?.value) {
       subtitleDiv.value.textContent = subtitle.slice(0, i + 1)
+    }
+
+    if (audioAvailable) {
+      audioAvailable = false
+      audio.value.currentTime = 0
+      audio.value.volume = 1
+      audio.value.play().finally(() => {
+        delay(0.2).then(() => {
+          audioAvailable = true
+        })
+      })
     }
     await delay(interval)
   }
@@ -115,8 +129,25 @@ async function animate(seg: Segment) {
 }
 
 const modeHandler = (m: string) => mode = m
+const oncanplaythrough = () => {
+  audioAvailable = true
+  console.log("audio loaded.")
+
+  audio?.value?.removeEventListener("canplaythrough", oncanplaythrough)
+}
 
 onMounted(async () => {
+  audioAvailable = false
+  if (audio?.value) {
+    audio.value.addEventListener("canplaythrough", oncanplaythrough)
+    audio.value.addEventListener("error", () => {
+      audioAvailable = false
+      console.log("audio load failed.")
+    })
+    audio.value.src = apiAddress("/static/tick.mp3")
+    audio.value.load()
+  }
+
   if (!context) {
     context = canvas.value.getContext("2d")
   }
@@ -140,6 +171,7 @@ onBeforeUnmount(async () => {
     <img ref="image" alt="image" class="image" src=""/>
     <div ref="subtitleDiv" class="subtitle"></div>
     <canvas ref="canvas" style="display: none"></canvas>
+    <audio ref="audio"></audio>
   </div>
 </template>
 
