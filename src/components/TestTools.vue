@@ -3,14 +3,9 @@ import {onMounted, ref} from "vue"
 import * as service from "../scripts/Service"
 import {useRouter} from "vue-router";
 import {eventbus} from "../scripts/Utils";
-import {EventMessage} from "../scripts/EventMessages";
 
 const router = useRouter()
 const object_names = ref<Array<string>>([])
-
-function picturesChangeDisplayMode(displayMode: string): void {
-  eventbus.emit("Pictures:changeDisplayMode", {data: displayMode})
-}
 
 onMounted(async () => {
   object_names.value = await service.objectNames()
@@ -19,12 +14,13 @@ onMounted(async () => {
 
 <template>
   <div>
-    <div>切换图像/视频/混合</div>
-    <div v-if="router.currentRoute.value.name === 'Pictures'" style="margin-top: 10px;">
-      <a-button @click="picturesChangeDisplayMode('image')">image</a-button>
-      <a-button @click="picturesChangeDisplayMode('video')">video</a-button>
-      <a-button @click="picturesChangeDisplayMode('mixed')">mixed</a-button>
-    </div>
+<!--    <div v-if="router.currentRoute.value.name === 'Pictures'">-->
+<!--      <div>打字机/普通</div>-->
+<!--      <div style="margin-top: 10px;">-->
+<!--        <a-button @click="eventbus.emit('Pictures:typewriter')">image</a-button>-->
+<!--        <a-button @click="eventbus.emit('Pictures:plain')">video</a-button>-->
+<!--      </div>-->
+<!--    </div>-->
     <div style="margin-top: 10px;">切换object</div>
     <ul style="list-style-type: circle; margin-top: 10px;">
       <li v-for="object_name in object_names">

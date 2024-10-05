@@ -2,86 +2,58 @@
 import {onBeforeUnmount, onMounted, ref} from "vue";
 import * as service from "../scripts/Service"
 import {useRouter} from "vue-router";
-import {eventbus} from "../scripts/Utils";
-import {EventMessage} from "../scripts/EventMessages";
-
-interface Segment {
-  id: string
-  image: string
-  video: string
-  subtitle: string
-}
+import {delay, eventbus, Segment} from "../scripts/Utils";
+import Picture from "./Picture.vue"
 
 const router = useRouter()
-const img = ref<HTMLImageElement | null>(null)
-const video = ref<HTMLVideoElement | null>(null)
-const subtitleDiv = ref<HTMLDivElement | null>(null)
-const spinningDiv = ref<HTMLDivElement | null>(null)
+const container = ref<HTMLDivElement | null>(null)
 
 let ws: WebSocket | null = null
 let currentObjectName: string = ""
-let segments: Array<Segment> = []
-let cursor: number = 0
-let timer: NodeJS.Timeout | null = null
-let timerInterval: number = 6 * 1000
-let displayMode = "image"
+let changeInterval: number = 6
+let animationLoop: AnimationLoop | null = null
 
-function showImage(seg: Segment) {
-  video.value.style.display = "none"
-  img.value.style.display = "block"
-  img.value.src = service.apiAddress(seg.image)
-  img.value.onload = () => {
-    let subtitle = seg.subtitle
-    let maxWidth = img.value.width
-    subtitleDiv.value.style.maxWidth = `${maxWidth - 20}px`
-    subtitleDiv.value.textContent = subtitle
-    cursor = (cursor + 1) % segments.length
+class AnimationLoop {
+  running: boolean
+  interval: number
+  segments: Array<Segment>
+  cursor: number
+
+  constructor(interval: number, segments: Array<Segment>) {
+    this.interval = interval
+    this.segments = segments
+    this.running = true
+    this.cursor = 0
   }
-}
 
-function showVideo(seg: Segment) {
-  img.value.style.display = "none"
-  video.value.style.display = "block"
-  video.value.src = service.apiAddress(seg.video)
-  video.value.controls = false
-  video.value.addEventListener("loadedmetadata", () => {
-    let subtitle = seg.subtitle
-    let maxWidth = video.value.clientWidth
-    subtitleDiv.value.style.maxWidth = `${maxWidth - 20}px`
-    subtitleDiv.value.textContent = subtitle
-    cursor = (cursor + 1) % segments.length
-  }, {once: true});
-  video.value.load()
-}
-
-function updateImageDisplay() {
-  if (!img.value || !segments || segments.length <= cursor) return
-
-  spinningDiv.value.style.visibility = "hidden"
-  subtitleDiv.value.style.visibility = "visible"
-
-  const seg = segments[cursor]
-  if (displayMode === "image") {
-    showImage(seg)
-  } else if (displayMode === "video") {
-    showVideo(seg)
-  } else {
-    if (Math.random() > 0.5) {
-      showImage(seg)
-    } else {
-      showVideo(seg)
+  public async update() {
+    if (this.segments && this.segments.length > this.cursor) {
+      const seg = this.segments[this.cursor]
+      if (this.running) {
+        eventbus.emit("Pictures:update", seg)
+      }
+      this.cursor = (this.cursor + 1) % this.segments.length
     }
+  }
+
+  public async start() {
+    while (this.running) {
+      await this.update()
+      await delay(this.interval)
+    }
+  }
+
+  public stop() {
+    this.running = false
   }
 }
 
 function setSegments(array: Array<Segment>) {
-  segments = array
-  cursor = 0
-  if (timer) {
-    clearInterval(timer)
+  if (animationLoop) {
+    animationLoop.stop()
   }
-  timer = setInterval(updateImageDisplay, timerInterval)
-  updateImageDisplay()
+  animationLoop = new AnimationLoop(changeInterval, array)
+  animationLoop.start()
 }
 
 const onMessage = async (e: MessageEvent) => {
@@ -102,29 +74,12 @@ const onMessage = async (e: MessageEvent) => {
       const res = await service.pictures(currentObjectName)
       if (res.content) {
         setSegments(res.content)
-        updateImageDisplay()
       }
     }
   }
 }
 
-function showSpinning() {
-  spinningDiv.value.style.visibility = "visible"
-  subtitleDiv.value.style.visibility = "hidden"
-  img.value.style.display = "none"
-  video.value.style.display = "none"
-}
-
 onMounted(async () => {
-  eventbus.on("Pictures:changeDisplayMode", async (e: EventMessage) => {
-    console.log(e)
-    displayMode = e.data
-  })
-
-  showSpinning()
-  img.value.onerror = showSpinning
-  video.value.onerror = showSpinning
-
   ws = await service.ws_connect()
   if (ws) {
     ws.onopen = async () => {
@@ -145,8 +100,8 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(async () => {
-  if (timer) {
-    clearInterval(timer)
+  if (animationLoop) {
+    animationLoop.stop()
   }
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.close()
@@ -156,41 +111,21 @@ onBeforeUnmount(async () => {
 </script>
 
 <template>
-  <div class="pictures">
-    <div ref="spinningDiv" class="spinning">
-      <a-spin tip="Loading..." :spinning="true" size="large"></a-spin>
-    </div>
-    <img ref="img" alt="image" class="image" src=""/>
-    <video ref="video" class="video" autoplay loop muted playsinline></video>
-    <div ref="subtitleDiv" class="subtitle"></div>
+  <div class="pictures" ref="container">
+    <Picture :alive_duration="changeInterval"></Picture>
   </div>
 </template>
 
 <style scoped lang="less">
 
-@font-face {
-  font-family: 'Alibaba-Regular';
-  src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_55_Regular_55_Regular.ttf');
-}
-
-@font-face {
-  font-family: 'Alibaba-Thin';
-  src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_35_Thin_35_Thin.ttf');
-}
-
-@font-face {
-  font-family: 'Alibaba-Light';
-  src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_45_Light_45_Light.ttf');
-}
+//@font-face {
+//  font-family: 'Alibaba-Regular';
+//  src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_55_Regular_55_Regular.ttf');
+//}
 
 @font-face {
   font-family: 'Alibaba-Bold';
   src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_55_Regular_85_Bold.ttf');
-}
-
-@font-face {
-  font-family: 'Alibaba-Medium';
-  src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_65_Medium_65_Medium.ttf');
 }
 
 .pictures {
@@ -200,47 +135,5 @@ onBeforeUnmount(async () => {
   justify-content: center;
   position: relative;
   background-color: rgba(0, 0, 0, 1);
-
-  .image {
-    display: none;
-    width: auto;
-    height: 100%;
-  }
-
-  .video {
-    display: none;
-    width: auto;
-    height: 100%;
-  }
-
-  .subtitle {
-    display: block;
-    position: absolute;
-    bottom: 3%;
-    //bottom: 0;
-    //color: white;
-    //background-color: rgba(0, 0, 0, 0.5);
-
-    font-size: 32px;
-    //fonts-size: 24px;
-    color: white;
-    //fill: white;
-    -webkit-text-stroke: 1px black;
-    font-weight: normal;
-    font-family: Alibaba-Bold, sans-serif;
-
-    text-align: center;
-    padding: 10px;
-    border-radius: 5px;
-    overflow-wrap: break-word;
-  }
-
-  .spinning {
-    display: block;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
 }
 </style>

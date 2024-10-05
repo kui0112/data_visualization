@@ -9,3 +9,9 @@ export function randomChoice<T>(choices: Array<T>): T {
 export async function delay(timeout: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, timeout * 1000))
 }
+
+export interface Segment {
+    id: string
+    image: string
+    subtitle: string
+}

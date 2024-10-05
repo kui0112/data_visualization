@@ -4,7 +4,7 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: "/",
         name: "Home",
-        redirect: '/cameraView' // 默认重定向到知识图谱页面
+        component: () => import("./views/Home.vue")
     },
     {
         path: "/knowledgeGraph",

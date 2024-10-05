@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div></div>
+  <div style="text-align: center">welcome</div>
 </template>
 
 <style scoped lang="less">
