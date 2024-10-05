@@ -12,6 +12,7 @@ const canvas = ref<HTMLCanvasElement | null>(null)
 let context: CanvasRenderingContext2D | null = null
 let aliveDuration: number | null = null
 let animationId: number = Date.now()
+let mode: string = "typewriter"
 
 function measureText(font: string, text: string) {
   context.font = font
@@ -106,9 +107,14 @@ async function animate(seg: Segment) {
   showImage()
 
   animationId = Date.now()
-  // subtitleNoAnimation(seg.subtitle)
-  await subtitleAnimation(seg.subtitle)
+  if (mode === "typewriter") {
+    await subtitleAnimation(seg.subtitle)
+  } else {
+    subtitleNoAnimation(seg.subtitle)
+  }
 }
+
+const modeHandler = (m: string) => mode = m
 
 onMounted(async () => {
   if (!context) {
@@ -117,9 +123,11 @@ onMounted(async () => {
   aliveDuration = props.alive_duration
   showSpinning()
   eventbus.on("Pictures:update", animate)
+  eventbus.on("Pictures:mode", modeHandler)
 })
 onBeforeUnmount(async () => {
   eventbus.off("Pictures:update", animate)
+  eventbus.off("Pictures:mode", modeHandler)
 })
 
 </script>
