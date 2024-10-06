@@ -3,37 +3,26 @@ import {onBeforeUnmount, onMounted, ref} from "vue";
 import {delay, eventbus, Segment} from "../scripts/Utils";
 import {apiAddress} from "../scripts/Service";
 
-const props = defineProps(['alive_duration'])
 const image = ref<HTMLImageElement | null>(null)
 const subtitleDiv = ref<HTMLDivElement | null>(null)
 const spinningDiv = ref<HTMLDivElement | null>(null)
-const canvas = ref<HTMLCanvasElement | null>(null)
 const audio = ref<HTMLAudioElement | null>(null)
 
-let context: CanvasRenderingContext2D | null = null
-let aliveDuration: number | null = null
 let animationId: number = Date.now()
 let mode: string = "typewriter"
 let audioAvailable = false
-let audioLoaded = false
-
-function measureText(font: string, text: string) {
-  context.font = font
-  return context.measureText(text).width
-}
 
 function subtitleNoAnimation(subtitle: string) {
   if (!subtitle || subtitle.length === 0) {
     return
   }
+
   const maxWidth = image.value.width - 20
-  subtitleDiv.value.style.opacity = "100%"
-  subtitleDiv.value.style.fontSize = "32px"
   subtitleDiv.value.style.maxWidth = `${maxWidth}px`
   subtitleDiv.value.textContent = subtitle
 }
 
-async function subtitleAnimation(subtitle: string) {
+async function subtitleAnimation(subtitle: string, animInterval: number) {
   const currentAnimationId = animationId
   if (!subtitle || subtitle.length === 0) {
     return
@@ -41,15 +30,7 @@ async function subtitleAnimation(subtitle: string) {
 
   const maxWidth = image.value.width - 20
   subtitleDiv.value.style.maxWidth = `${maxWidth}px`
-  subtitleDiv.value.style.opacity = "100%"
-  let size = 32
-  const padding = measureText(`${size}px Alibaba-Regular`, "中文")
-  while (measureText(`${size}px Alibaba-Regular`, subtitle) + padding > maxWidth) {
-    size--
-  }
-  subtitleDiv.value.style.fontSize = `${size}px`
 
-  const interval = aliveDuration * 0.4 * (1.0 / subtitle.length)
   for (let i = 0; i < subtitle.length; i++) {
     if (currentAnimationId !== animationId) return
 
@@ -62,26 +43,15 @@ async function subtitleAnimation(subtitle: string) {
       audio.value.currentTime = 0
       audio.value.volume = 1
       audio.value.play().finally(() => {
-        delay(0.2).then(() => {
-          audioAvailable = true
-        })
+        // delay(0.2).then(() => {
+        //   audioAvailable = true
+        // })
+
+        audioAvailable = true
       })
     }
-    await delay(interval)
+    await delay(animInterval)
   }
-  // 逐渐消失
-  // const disappearTotalTime = aliveDuration * 0.2
-  // const disappearInterval = disappearTotalTime / 30
-  // let opacity = 100
-  // let opacityStep = opacity / 25
-  // for (let i = 0; i < 26; i++) {
-  //   opacity -= opacityStep
-  //   if (opacity < 0) {
-  //     opacity = 0
-  //   }
-  //   subtitleDiv.value.style.opacity = `${opacity.toFixed(0)}%`
-  //   await delay(disappearInterval)
-  // }
 }
 
 function showSpinning() {
@@ -122,7 +92,7 @@ async function animate(seg: Segment) {
 
   animationId = Date.now()
   if (mode === "typewriter") {
-    await subtitleAnimation(seg.subtitle)
+    await subtitleAnimation(seg.subtitle, seg.animInterval)
   } else {
     subtitleNoAnimation(seg.subtitle)
   }
@@ -148,10 +118,6 @@ onMounted(async () => {
     audio.value.load()
   }
 
-  if (!context) {
-    context = canvas.value.getContext("2d")
-  }
-  aliveDuration = props.alive_duration
   showSpinning()
   eventbus.on("Pictures:update", animate)
   eventbus.on("Pictures:mode", modeHandler)
@@ -170,7 +136,6 @@ onBeforeUnmount(async () => {
     </div>
     <img ref="image" alt="image" class="image" src=""/>
     <div ref="subtitleDiv" class="subtitle"></div>
-    <canvas ref="canvas" style="display: none"></canvas>
     <audio ref="audio"></audio>
   </div>
 </template>
@@ -209,7 +174,7 @@ onBeforeUnmount(async () => {
     color: white;
     background-color: rgba(0, 0, 0, 0.5);
 
-    font-size: 32px;
+    font-size: 16px;
     //fonts-size: 24px;
     //color: white;
     //fill: white;

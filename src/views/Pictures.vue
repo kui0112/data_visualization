@@ -2,44 +2,42 @@
 import {onBeforeUnmount, onMounted, ref} from "vue";
 import * as service from "../scripts/Service"
 import {useRouter} from "vue-router";
-import {delay, eventbus, Segment} from "../scripts/Utils";
+import {delay, eventbus, Segment, clamp, sigmoidMapped} from "../scripts/Utils";
 import Picture from "./Picture.vue"
+import {Modal} from 'ant-design-vue';
 
 const router = useRouter()
 const container = ref<HTMLDivElement | null>(null)
+const interactionGot = ref<boolean>(false)
 
 let ws: WebSocket | null = null
 let currentObjectName: string = ""
-let changeInterval: number = 6
 let animationLoop: AnimationLoop | null = null
 
 class AnimationLoop {
   running: boolean
-  interval: number
   segments: Array<Segment>
   cursor: number
 
-  constructor(interval: number, segments: Array<Segment>) {
-    this.interval = interval
+  constructor(segments: Array<Segment>) {
     this.segments = segments
     this.running = true
     this.cursor = 0
   }
 
-  public async update() {
-    if (this.segments && this.segments.length > this.cursor) {
+  public async start() {
+    while (this.running) {
+      if (!this.segments.length || this.segments.length <= this.cursor) {
+        return
+      }
+
       const seg = this.segments[this.cursor]
       if (this.running) {
         eventbus.emit("Pictures:update", seg)
       }
       this.cursor = (this.cursor + 1) % this.segments.length
-    }
-  }
 
-  public async start() {
-    while (this.running) {
-      await this.update()
-      await delay(this.interval)
+      await delay(seg.aliveDuration)
     }
   }
 
@@ -52,7 +50,36 @@ function setSegments(array: Array<Segment>) {
   if (animationLoop) {
     animationLoop.stop()
   }
-  animationLoop = new AnimationLoop(changeInterval, array)
+
+  // 根据每个segment的字数，计算 aliveDuration 和 animInterval
+  for (const seg of array) {
+    const subtitle = seg.subtitle
+    let stayTime = 0
+
+    const lineCount = Math.floor(subtitle.length / 27)
+    switch (lineCount) {
+      case 0:
+        stayTime = 5
+        break
+      case 1:
+        stayTime = 6
+        break
+      case 2:
+        stayTime = 7
+        break
+      case 3:
+        stayTime = 7
+        break
+      default:
+        stayTime = 7
+        break
+    }
+    const interval = clamp(4 / subtitle.length, 0.2, 0.25)
+    seg.aliveDuration = interval * subtitle.length + stayTime
+    seg.animInterval = interval
+  }
+
+  animationLoop = new AnimationLoop(array)
   animationLoop.start()
 }
 
@@ -79,7 +106,32 @@ const onMessage = async (e: MessageEvent) => {
   }
 }
 
+function waitForUserInteraction() {
+  Modal.info({
+    title: 'interaction',
+    content: "auto play sounds, need user's interaction ...",
+    okText: 'OK',
+    onOk: () => {
+      return new Promise(resolve => {
+        interactionGot.value = true
+        resolve(true)
+      })
+    }
+  });
+
+  return new Promise(resolve => {
+    let timerId = setInterval(() => {
+      if (interactionGot.value) {
+        clearInterval(timerId)
+        resolve(null)
+      }
+    }, 0.02)
+  })
+}
+
 onMounted(async () => {
+  await waitForUserInteraction()
+
   ws = await service.ws_connect()
   if (ws) {
     ws.onopen = async () => {
@@ -112,7 +164,7 @@ onBeforeUnmount(async () => {
 
 <template>
   <div class="pictures" ref="container">
-    <Picture :alive_duration="changeInterval"></Picture>
+    <Picture></Picture>
   </div>
 </template>
 
