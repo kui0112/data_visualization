@@ -2,9 +2,10 @@
 import {onBeforeUnmount, onMounted, ref} from "vue";
 import * as service from "../scripts/Service"
 import {useRouter} from "vue-router";
-import {delay, eventbus, Segment, clamp, sigmoidMapped} from "../scripts/Utils";
+import {delay, eventbus, Segment, clamp} from "../scripts/Utils";
 import Picture from "./Picture.vue"
 import {Modal} from 'ant-design-vue';
+import Mask from "../components/Mask.vue";
 
 const router = useRouter()
 const container = ref<HTMLDivElement | null>(null)
@@ -13,6 +14,7 @@ const interactionGot = ref<boolean>(false)
 let ws: WebSocket | null = null
 let currentObjectName: string = ""
 let animationLoop: AnimationLoop | null = null
+let mask: HTMLElement | null = null
 
 class AnimationLoop {
   running: boolean
@@ -42,6 +44,7 @@ class AnimationLoop {
   }
 
   public stop() {
+    eventbus.emit("Pictures:stop")
     this.running = false
   }
 }
@@ -89,19 +92,21 @@ const onMessage = async (e: MessageEvent) => {
   }
 
   const data = JSON.parse(e.data)
-  if (data.type === "heartbeat") {
+  if (data.name === currentObjectName) {
     ws.send("1")
     return
-  }
-
-  if (data.type === "command" && data.operation === "update") {
-    console.log("update command received.")
+  } else {
     if (data.name && currentObjectName !== data.name) {
+      mask.style.display = "none"
+
       currentObjectName = data.name
       const res = await service.pictures(currentObjectName)
-      if (res.content) {
-        setSegments(res.content)
-      }
+      setSegments(res.content)
+    }
+    if (!data.name) {
+      currentObjectName = ""
+      mask.style.display = "block"
+      animationLoop?.stop()
     }
   }
 }
@@ -132,6 +137,8 @@ function waitForUserInteraction() {
 onMounted(async () => {
   await waitForUserInteraction()
 
+  mask = document.getElementById("picturesMask")
+
   ws = await service.ws_connect()
   if (ws) {
     ws.onopen = async () => {
@@ -142,9 +149,12 @@ onMounted(async () => {
   const res1 = await service.currentObjectName()
   currentObjectName = res1.content
   if (!currentObjectName) {
+    mask.style.display = "block"
+    animationLoop?.stop()
     return
   }
 
+  mask.style.display = "none"
   const res = await service.pictures(currentObjectName)
   if (res.content) {
     setSegments(res.content)
@@ -164,6 +174,7 @@ onBeforeUnmount(async () => {
 
 <template>
   <div class="pictures" ref="container">
+    <Mask id="picturesMask"></Mask>
     <Picture></Picture>
   </div>
 </template>
@@ -187,5 +198,13 @@ onBeforeUnmount(async () => {
   justify-content: center;
   position: relative;
   background-color: rgba(0, 0, 0, 1);
+
+  .container {
+    position: absolute;
+
+    .flower {
+      position: absolute;
+    }
+  }
 }
 </style>

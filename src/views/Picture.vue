@@ -4,31 +4,34 @@ import {delay, eventbus, Segment} from "../scripts/Utils";
 import {apiAddress} from "../scripts/Service";
 
 const image = ref<HTMLImageElement | null>(null)
+const video = ref<HTMLVideoElement | null>(null)
 const subtitleDiv = ref<HTMLDivElement | null>(null)
 const spinningDiv = ref<HTMLDivElement | null>(null)
 const audio = ref<HTMLAudioElement | null>(null)
 
 let animationId: number = Date.now()
-let mode: string = "typewriter"
+let subtitleMode: string = "typewriter"
+let contentMode: string = "video"
 let audioAvailable = false
+let videoAvailable = false
+let segmentId: number | null = null
+let segment: Segment | null = null
 
-function subtitleNoAnimation(subtitle: string) {
+function subtitleNoAnimation(subtitle: string, maxWidth: number) {
   if (!subtitle || subtitle.length === 0) {
     return
   }
 
-  const maxWidth = image.value.width - 20
   subtitleDiv.value.style.maxWidth = `${maxWidth}px`
   subtitleDiv.value.textContent = subtitle
 }
 
-async function subtitleAnimation(subtitle: string, animInterval: number) {
+async function subtitleAnimation(subtitle: string, maxWidth: number, animInterval: number) {
   const currentAnimationId = animationId
   if (!subtitle || subtitle.length === 0) {
     return
   }
 
-  const maxWidth = image.value.width - 20
   subtitleDiv.value.style.maxWidth = `${maxWidth}px`
 
   for (let i = 0; i < subtitle.length; i++) {
@@ -55,22 +58,60 @@ async function subtitleAnimation(subtitle: string, animInterval: number) {
 }
 
 function showSpinning() {
-  spinningDiv.value.style.visibility = "visible"
+  spinningDiv.value.style.display = "block"
 
-  subtitleDiv.value.style.visibility = "hidden"
-  image.value.style.visibility = "hidden"
+  subtitleDiv.value.style.display = "none"
+  image.value.style.display = "none"
+  video.value.style.display = "none"
 }
 
 function showImage() {
   if (spinningDiv?.value?.style) {
-    spinningDiv.value.style.visibility = "hidden"
+    spinningDiv.value.style.display = "none"
+  }
+  if (video?.value?.style) {
+    video.value.style.display = "none"
   }
   if (subtitleDiv?.value?.style) {
-    subtitleDiv.value.style.visibility = "visible"
+    subtitleDiv.value.style.display = "block"
   }
   if (image?.value?.style) {
-    image.value.style.visibility = "visible"
+    image.value.style.display = "block"
   }
+}
+
+function showVideo() {
+  if (spinningDiv?.value?.style) {
+    spinningDiv.value.style.display = "none"
+  }
+  if (image?.value?.style) {
+    image.value.style.display = "none"
+  }
+  if (subtitleDiv?.value?.style) {
+    subtitleDiv.value.style.display = "block"
+  }
+  if (video?.value?.style) {
+    video.value.style.display = "block"
+  }
+}
+
+
+function setVideo(e: HTMLVideoElement, s: string) {
+  videoAvailable = false
+  const currentSegmentId = segmentId
+  return new Promise<void>(async (resolve, reject) => {
+    if (e) {
+      e.onerror = (err) => reject(err)
+      e.src = apiAddress(s)
+      e.load()
+      while (!videoAvailable && currentSegmentId === segmentId) {
+        await delay(0.02)
+      }
+      resolve()
+    } else {
+      reject("image element is null.")
+    }
+  })
 }
 
 function setImage(e: HTMLImageElement, s: string) {
@@ -85,46 +126,92 @@ function setImage(e: HTMLImageElement, s: string) {
   })
 }
 
-async function animate(seg: Segment) {
-  if (!image?.value) return
-  await setImage(image.value, seg.image)
-  showImage()
+async function update(seg: Segment) {
+  segment = seg
+  segmentId = Date.now()
+
+  if (!image?.value || !video?.value) return
+
+  let maxWidth = 0
+
+  if (contentMode === "image" || (contentMode === "mix" && Math.random() > 0.5)) {
+    await setImage(image.value, seg.image)
+    showImage()
+    maxWidth = image.value.clientWidth
+  } else {
+    await setVideo(video.value, seg.video)
+    showVideo()
+    maxWidth = video.value.clientWidth
+  }
 
   animationId = Date.now()
-  if (mode === "typewriter") {
-    await subtitleAnimation(seg.subtitle, seg.animInterval)
+  if (subtitleMode === "typewriter") {
+    await subtitleAnimation(seg.subtitle, maxWidth, seg.animInterval)
   } else {
-    subtitleNoAnimation(seg.subtitle)
+    subtitleNoAnimation(seg.subtitle, maxWidth)
   }
 }
 
-const modeHandler = (m: string) => mode = m
-const oncanplaythrough = () => {
+const subtitleModeHandler = (m: string) => {
+  subtitleMode = m
+  update(segment)
+}
+const contentModeHandler = (m: string) => {
+  contentMode = m
+  update(segment)
+}
+
+const audioOnCanPlayThrough = () => {
   audioAvailable = true
   console.log("audio loaded.")
 
-  audio?.value?.removeEventListener("canplaythrough", oncanplaythrough)
+  audio?.value?.removeEventListener("canplaythrough", audioOnCanPlayThrough)
+}
+const stopHandler = () => {
+  animationId = Date.now()
+  audio.value.pause()
+}
+
+const audioOnError = () => {
+  audioAvailable = false
+  console.log("audio load failed.")
+}
+
+const videoOnLoadedMetaData = () => {
+  videoAvailable = true
 }
 
 onMounted(async () => {
   audioAvailable = false
   if (audio?.value) {
-    audio.value.addEventListener("canplaythrough", oncanplaythrough)
-    audio.value.addEventListener("error", () => {
-      audioAvailable = false
-      console.log("audio load failed.")
-    })
+    audio.value.addEventListener("canplaythrough", audioOnCanPlayThrough)
+    audio.value.addEventListener("error", audioOnError)
     audio.value.src = apiAddress("/static/tick.mp3")
     audio.value.load()
   }
 
+  videoAvailable = false
+  if (video?.value) {
+    video.value.addEventListener("loadedmetadata", videoOnLoadedMetaData)
+  }
+
   showSpinning()
-  eventbus.on("Pictures:update", animate)
-  eventbus.on("Pictures:mode", modeHandler)
+
+  eventbus.on("Pictures:update", update)
+  eventbus.on("Pictures:subtitleMode", subtitleModeHandler)
+  eventbus.on("Pictures:contentMode", contentModeHandler)
+  eventbus.on("Pictures:stop", stopHandler)
 })
 onBeforeUnmount(async () => {
-  eventbus.off("Pictures:update", animate)
-  eventbus.off("Pictures:mode", modeHandler)
+  audio.value.removeEventListener("canplaythrough", audioOnCanPlayThrough)
+  audio.value.removeEventListener("error", audioOnError)
+
+  video.value.removeEventListener("loadedmetadata", videoOnLoadedMetaData)
+
+  eventbus.off("Pictures:update", update)
+  eventbus.off("Pictures:subtitleMode", subtitleModeHandler)
+  eventbus.off("Pictures:contentMode", contentModeHandler)
+  eventbus.off("Pictures:stop", stopHandler)
 })
 
 </script>
@@ -135,6 +222,7 @@ onBeforeUnmount(async () => {
       <a-spin tip="Loading..." :spinning="true" size="large"></a-spin>
     </div>
     <img ref="image" alt="image" class="image" src=""/>
+    <video ref="video" class="video" autoplay loop muted playsinline></video>
     <div ref="subtitleDiv" class="subtitle"></div>
     <audio ref="audio"></audio>
   </div>
@@ -162,6 +250,12 @@ onBeforeUnmount(async () => {
 
   .image {
     display: block;
+    width: auto;
+    height: 100%;
+  }
+
+  .video {
+    display: none;
     width: auto;
     height: 100%;
   }

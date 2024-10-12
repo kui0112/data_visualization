@@ -2,6 +2,7 @@
 import Nav from "./components/Nav.vue";
 import {onMounted, ref} from "vue";
 import TestTools from "./components/TestTools.vue";
+import MaskComponent from "./components/Mask.vue";
 
 const navDiv = ref<HTMLDivElement | null>(null)
 const routerViewDiv = ref<HTMLDivElement | null>(null)

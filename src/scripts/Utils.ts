@@ -13,6 +13,7 @@ export async function delay(timeout: number): Promise<void> {
 export interface Segment {
     id: string
     image: string
+    video: string
     subtitle: string
     aliveDuration: number
     animInterval: number
@@ -20,12 +21,4 @@ export interface Segment {
 
 export function clamp(value: number, min: number, max: number) {
     return Math.min(Math.max(value, min), max);
-}
-
-export function sigmoid(x: number) {
-    return 1 / (1 + Math.exp(-x));
-}
-
-export function sigmoidMapped(x: number, c: number, d: number) {
-    return c + (d - c) * sigmoid(x);
 }

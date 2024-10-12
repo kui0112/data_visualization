@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import {ref, onMounted, onBeforeUnmount} from "vue"
-import {updateVectors, MatrixAnimation} from "../scripts/MatrixAnimation"
+import {MatrixAnimation} from "../scripts/MatrixAnimation"
 import * as service from "../scripts/Service"
 import {useRouter} from "vue-router"
+import Mask from "../components/Mask.vue";
 
 const router = useRouter()
 const canvas = ref<HTMLCanvasElement | null>(null)
@@ -10,6 +11,7 @@ const animation = new MatrixAnimation()
 
 let ws: WebSocket | null = null
 let currentObjectName: string = ""
+let mask: HTMLElement | null = null
 
 const onMessage = async (e: MessageEvent) => {
   if (router.currentRoute.value.name !== "VectorAnimation") {
@@ -17,25 +19,29 @@ const onMessage = async (e: MessageEvent) => {
   }
 
   const data = JSON.parse(e.data)
-  if (data.type === "heartbeat") {
+  if (data.name === currentObjectName) {
     ws.send("1")
     return
-  }
-
-  if (data.type === "command" && data.operation === "update") {
-    console.log("update command received.")
+  } else {
     if (data.name && currentObjectName !== data.name) {
+      mask.style.display = "none"
+
       currentObjectName = data.name
       const res = await service.vectors(currentObjectName)
-      // console.log(res)
-      updateVectors(res.content)
-      animation.reset()
-      animation.render()
+      await animation.updateVectors(res.content)
+      animation.start()
+    }
+    if (!data.name) {
+      currentObjectName = ""
+      mask.style.display = "block"
     }
   }
 }
 
 onMounted(async () => {
+  mask = document.getElementById("matrixAnimationMask")
+  animation.initialize(canvas.value)
+
   ws = await service.ws_connect()
   if (ws) {
     ws.onopen = async (e: MessageEvent) => {
@@ -45,14 +51,16 @@ onMounted(async () => {
   }
 
   const res1 = await service.currentObjectName()
-  currentObjectName = res1.content
-  if (currentObjectName) {
+  if (res1.content) {
+    currentObjectName = res1.content
+    mask.style.display = "none"
     const res2 = await service.vectors(currentObjectName)
-    updateVectors(res2.content)
+    animation.updateVectors(res2.content)
+    animation.start()
+  } else {
+    currentObjectName = ""
+    mask.style.display = "block"
   }
-
-  animation.initialize(canvas.value)
-  animation.render()
 })
 
 onBeforeUnmount(() => {
@@ -65,6 +73,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="canvasParent">
+    <Mask id="matrixAnimationMask"></Mask>
     <canvas class="canvas" ref="canvas"></canvas>
   </div>
 </template>

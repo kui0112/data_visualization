@@ -1,6 +1,7 @@
-import vectors from "../assets/vectors_blank.json"
+import {delay} from "./Utils";
+import {nextTick} from "vue";
 
-let vectorArray = vectors.value.split(" ");
+let vectorArray = "0000000000 0000000000 0000000000 0000000000 0000000000".split(" ");
 const randomVector = () => vectorArray[Math.floor(Math.random() * vectorArray.length)];
 const randomNum = (a: number, b: number) => a + Math.floor(Math.random() * b)
 export const updateVectors = (vectorString: string) => {
@@ -55,14 +56,13 @@ export class MatrixAnimation {
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
 
-    timer: NodeJS.Timeout | null = null
-
     starterFlag: boolean = true
     // 跳过更新字符位置的次数
     counter: number = 0
     counterMaxValue: number = 25
     // 持续的帧数
     frames: number = 0
+    animationId: number = 0
 
     constructor() {
     }
@@ -73,6 +73,7 @@ export class MatrixAnimation {
         this.canvas.height = window.innerHeight * this.scale
 
         this.ctx = this.canvas.getContext('2d')
+
         this.ctx.font = `${this.fontSize}px SanFrancisco`
         this.columns = this.canvas.width / this.fontSize
         this.rows = this.canvas.height / this.fontSize
@@ -81,56 +82,55 @@ export class MatrixAnimation {
         }
     }
 
-    public draw() {
-        this.ctx.fillStyle = `rgba(0, 0, 0, ${this.transparencyStep})`
+    public async start() {
+        const currentAnimId = Date.now()
+
+        this.ctx.fillStyle = `rgba(0, 0, 0, 1)`
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        while (this.animationId === currentAnimId) {
+            this.ctx.fillStyle = `rgba(0, 0, 0, ${this.transparencyStep})`
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
-        for (let i = 0; i < this.drops.length; i++) {
-            const drop = this.drops[i]
+            for (let i = 0; i < this.drops.length; i++) {
+                const drop = this.drops[i]
+                // 绘制字符之前清空格子
+                if (this.animationId !== currentAnimId) return
+                this.ctx.fillStyle = `rgba(0, 0, 0, 1)`
+                if (this.animationId !== currentAnimId) return
+                this.ctx.fillRect(drop.x * this.fontSize, (drop.y - 1) * this.fontSize, this.fontSize, this.fontSize)
 
-            // 绘制字符之前清空格子
-            this.ctx.fillStyle = `rgba(0, 0, 0, 1)`
-            this.ctx.fillRect(drop.x * this.fontSize, (drop.y - 1) * this.fontSize, this.fontSize, this.fontSize)
+                // 绘制字符
+                if (this.animationId !== currentAnimId) return
+                this.ctx.fillStyle = '#ffffff'
+                if (this.animationId !== currentAnimId) return
+                this.ctx.fillText(drop.next(), drop.x * this.fontSize, drop.y * this.fontSize)
 
-            // const coversMaxValue = Math.ceil(1.0 / this.transparencyStep)
-            // // 覆盖次数
-            // let covers = this.frames + 1 >= coversMaxValue ? this.frames + 1 : coversMaxValue
-            // let alphaValue = covers * this.transparencyStep >= 1 ? 1 : covers * this.transparencyStep
-            // this.ctx.fillStyle = `rgba(0,0,0,${alphaValue})`
-            // this.ctx.fillRect(drop.x * this.fontSize, drop.y * this.fontSize, this.fontSize, this.fontSize)
-            //
-            // 绘制字符
-            this.ctx.fillStyle = '#ffffff'
-            this.ctx.fillText(drop.next(), drop.x * this.fontSize, drop.y * this.fontSize)
-            drop.y++
-            drop.aliveFrames++
-            if (this.starterFlag && drop.y * this.fontSize > this.canvas.height && i === 0) {
-                this.counter++
-                if (this.counter > this.counterMaxValue) {
-                    this.starterFlag = false
-                    this.fps = 1
-                    this.createMainLoop()
+                drop.y++
+                drop.aliveFrames++
+                if (this.starterFlag && drop.y * this.fontSize > this.canvas.height && i === 0) {
+                    this.counter++
+                    if (this.counter > this.counterMaxValue) {
+                        this.starterFlag = false
+                        this.fps = 1
+                    }
                 }
-            }
-            if (!this.starterFlag && drop.y * this.fontSize > this.canvas.height && Math.random() > 0.95) {
-                drop.y = 0
-            }
+                if (!this.starterFlag && drop.y * this.fontSize > this.canvas.height && Math.random() > 0.95) {
+                    drop.y = 0
+                }
 
-            this.frames++
+                this.frames++
+            }
+            await delay(1.0 / this.fps)
         }
     }
 
-    public render() {
+    public async updateVectors(vectorString: string) {
         this.ctx.fillStyle = `rgba(0, 0, 0, 1)`
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
-        this.createMainLoop()
-    }
+        updateVectors(vectorString)
+        this.animationId = Date.now()
 
-    public reset(): void {
-        if (this.timer !== null) {
-            clearInterval(this.timer)
-        }
         for (let i = 0; i < this.columns; i++) {
             this.drops[i].reset()
         }
@@ -138,14 +138,6 @@ export class MatrixAnimation {
         this.counter = 0
         this.starterFlag = true
         this.fps = 20
-    }
-
-    public createMainLoop() {
-        if (this.timer !== null) {
-            clearInterval(this.timer)
-        }
-        this.timer = setInterval(() => {
-            this.draw()
-        }, 1000.0 / this.fps)
+        await nextTick()
     }
 }
