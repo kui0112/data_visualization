@@ -235,11 +235,6 @@ onBeforeUnmount(async () => {
   src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_55_Regular_55_Regular.ttf');
 }
 
-//@font-face {
-//  font-family: 'Alibaba-Bold';
-//  src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_55_Regular_85_Bold.ttf');
-//}
-
 .container {
   width: 100%;
   height: 100%;
@@ -264,18 +259,12 @@ onBeforeUnmount(async () => {
     display: block;
     position: absolute;
     bottom: 3%;
-    //bottom: 0;
     color: white;
     background-color: rgba(0, 0, 0, 0.5);
 
     font-size: 16px;
-    //fonts-size: 24px;
-    //color: white;
-    //fill: white;
-    //-webkit-text-stroke: 1px black;
     font-weight: normal;
     font-family: Alibaba-Regular, sans-serif;
-    //font-family: Alibaba-Bold, sans-serif;
 
     text-align: center;
     padding: 10px;

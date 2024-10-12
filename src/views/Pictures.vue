@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import {onBeforeUnmount, onMounted, ref} from "vue";
+import {onBeforeUnmount, onMounted, ref} from "vue"
 import * as service from "../scripts/Service"
 import {useRouter} from "vue-router";
-import {delay, eventbus, Segment, clamp} from "../scripts/Utils";
-import Picture from "./Picture.vue"
-import {Modal} from 'ant-design-vue';
-import Mask from "../components/Mask.vue";
+import {delay, Segment, clamp} from "../scripts/Utils"
+import Video from "./Video.vue"
+import {Modal} from 'ant-design-vue'
+import Mask from "../components/Mask.vue"
 
 const router = useRouter()
 const container = ref<HTMLDivElement | null>(null)
 const interactionGot = ref<boolean>(false)
+const picture = ref<any>(null)
 
 let ws: WebSocket | null = null
 let currentObjectName: string = ""
@@ -34,17 +35,22 @@ class AnimationLoop {
       }
 
       const seg = this.segments[this.cursor]
+      const preloadSeg = this.segments[(this.cursor + 1) % this.segments.length]
+
       if (this.running) {
-        eventbus.emit("Pictures:update", seg)
+        picture.value.update(seg)
+        setTimeout(() => {
+          picture.value.setPreloadVideo(preloadSeg)
+        }, 1000)
       }
-      this.cursor = (this.cursor + 1) % this.segments.length
+      this.cursor = (this.cursor + 2) % this.segments.length
 
       await delay(seg.aliveDuration)
     }
   }
 
   public stop() {
-    eventbus.emit("Pictures:stop")
+    picture.value.stop()
     this.running = false
   }
 }
@@ -54,8 +60,12 @@ function setSegments(array: Array<Segment>) {
     animationLoop.stop()
   }
 
+  const filteredArray = new Array<Segment>()
+
   // 根据每个segment的字数，计算 aliveDuration 和 animInterval
   for (const seg of array) {
+    if (!seg.video) continue
+
     const subtitle = seg.subtitle
     let stayTime = 0
 
@@ -80,6 +90,8 @@ function setSegments(array: Array<Segment>) {
     const interval = clamp(4 / subtitle.length, 0.2, 0.25)
     seg.aliveDuration = interval * subtitle.length + stayTime
     seg.animInterval = interval
+
+    filteredArray.push(seg)
   }
 
   animationLoop = new AnimationLoop(array)
@@ -139,13 +151,15 @@ onMounted(async () => {
 
   mask = document.getElementById("picturesMask")
 
-  ws = await service.ws_connect()
-  if (ws) {
-    ws.onopen = async () => {
-      console.log("ws connected.")
+  service.ws_connect().then((res) => {
+    ws = res
+    if (ws) {
+      ws.onopen = async () => {
+        console.log("ws connected.")
+      }
+      ws.onmessage = onMessage
     }
-    ws.onmessage = onMessage
-  }
+  })
   const res1 = await service.currentObjectName()
   currentObjectName = res1.content
   if (!currentObjectName) {
@@ -175,17 +189,11 @@ onBeforeUnmount(async () => {
 <template>
   <div class="pictures" ref="container">
     <Mask id="picturesMask"></Mask>
-    <Picture></Picture>
+    <Video ref="picture"></Video>
   </div>
 </template>
 
 <style scoped lang="less">
-
-//@font-face {
-//  font-family: 'Alibaba-Regular';
-//  src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_55_Regular_55_Regular.ttf');
-//}
-
 @font-face {
   font-family: 'Alibaba-Bold';
   src: url('../assets/fonts/Alibaba_PuHuiTi_2.0_55_Regular_85_Bold.ttf');
@@ -202,7 +210,7 @@ onBeforeUnmount(async () => {
   .container {
     position: absolute;
 
-    .flower {
+    .mask {
       position: absolute;
     }
   }

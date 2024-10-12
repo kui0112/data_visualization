@@ -49,13 +49,15 @@ async function EmergeAnimation(e: HTMLElement) {
 onMounted(async () => {
   mask = document.getElementById("knowledgeGraphMask")!
 
-  ws = await service.ws_connect()
-  if (ws) {
-    ws.onopen = async (e: MessageEvent) => {
-      console.log("ws connected.")
+  service.ws_connect().then((res) => {
+    ws = res
+    if (ws) {
+      ws.onopen = async (e: MessageEvent) => {
+        console.log("ws connected.")
+      }
+      ws.onmessage = onMessage
     }
-    ws.onmessage = onMessage
-  }
+  })
   const res1 = await service.currentObjectName()
   currentObjectName = res1.content
   if (!currentObjectName) {

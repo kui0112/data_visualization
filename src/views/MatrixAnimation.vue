@@ -42,13 +42,15 @@ onMounted(async () => {
   mask = document.getElementById("matrixAnimationMask")
   animation.initialize(canvas.value)
 
-  ws = await service.ws_connect()
-  if (ws) {
-    ws.onopen = async (e: MessageEvent) => {
-      console.log("ws connected.")
+  service.ws_connect().then((res) => {
+    ws = res
+    if (ws) {
+      ws.onopen = async (e: MessageEvent) => {
+        console.log("ws connected.")
+      }
+      ws.onmessage = onMessage
     }
-    ws.onmessage = onMessage
-  }
+  })
 
   const res1 = await service.currentObjectName()
   if (res1.content) {

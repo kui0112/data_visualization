@@ -1,26 +1,59 @@
 <script setup lang="ts">
 
 import {onBeforeUnmount, onMounted, ref} from "vue";
-import string from "vite-plugin-string";
+import {clamp} from "../scripts/Utils";
 
-const flowerDiv = ref<HTMLDivElement>(null)
-const step = 0.5
+const maskDiv = ref<HTMLDivElement>(null)
+const pieceNum = 14
+const angleStep = 360.0 / pieceNum
 
-let i = 0
+const pieces = new Array<Array<HTMLDivElement>>()
+const colors = new Array<number>()
+const colorStep = 5
+const minValue = 0
+const maxValue = 200
+
 let timer: NodeJS.Timeout | null = null
+let frames: number = 0
+let cursor: number = 0
 
-const updatePosition = () => {
-  const elements = document.getElementsByClassName("petal")
-  for (const e of elements) {
-    const petal = e as HTMLDivElement
-    const id = parseInt(petal.getAttribute('id'))
-    petal.style.transform = `rotate(${(id * 45 + step * i) % 360}deg)`
+const update = () => {
+  if (frames % 3 === 0) {
+    colors[cursor] = minValue
   }
-  i++
+
+  for (let i = 0; i < pieces.length; i++) {
+    if (i === cursor) continue
+    if (colors[i] < maxValue) {
+      // 计算颜色
+      colors[i] = clamp(colors[i] + colorStep, minValue, maxValue)
+      // 应用颜色
+      for (let j = 0; j < pieces[i].length; j++) {
+        pieces[i][j].style.backgroundColor = `rgb(${colors[i]},${colors[i]},${colors[i]})`
+      }
+    }
+  }
+
+  if (frames % 3 === 0) {
+    cursor = (cursor + 1) % pieceNum
+  }
+
+  frames++
 }
 
 onMounted(() => {
-  timer = setInterval(updatePosition, 0.04)
+  const elements = document.getElementsByClassName("piece")
+  for (const e of elements) {
+    const children = new Array<HTMLDivElement>()
+    for (const child of e.children) {
+      children.push(child as HTMLDivElement)
+    }
+    pieces.push(children)
+    colors.push(maxValue)
+  }
+  cursor = 0
+  colors[cursor] = minValue
+  timer = setInterval(update, 20)
 })
 
 onBeforeUnmount(() => {
@@ -33,10 +66,11 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="container">
-    <div class="flower" ref="flowerDiv">
-      <div class="petal" v-for="i in 8" :key="i" :id="`${i}`" :style="`transform: rotate(${i * 45}deg)`">
-        <div class="circle"></div>
-        <div class="triangle"></div>
+    <div class="mask" ref="maskDiv">
+      <div class="piece" v-for="i in pieceNum" :key="i" :id="`${i}`" :style="`transform: rotate(${i * angleStep}deg)`">
+        <div class="circle1"></div>
+        <div class="rectangle"></div>
+        <div class="circle2"></div>
       </div>
     </div>
   </div>
@@ -44,46 +78,52 @@ onBeforeUnmount(() => {
 
 <style scoped lang="less">
 .container {
-  //position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: black;
+  background: white;
   display: none;
   z-index: 10;
 }
 
-.flower {
+.mask {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-.circle {
-  background: white;
+.circle1 {
+  margin-bottom: -7px;
+  background-color: rgb(200, 200, 200);
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 14px;
+  height: 14px;
 }
 
-.triangle {
-  margin-top: -20px;
-  width: 0;
-  height: 0;
-  border-top: 80px solid white;
-  border-left: 28px solid transparent;
-  border-right: 28px solid transparent;
+.rectangle {
+  width: 14px;
+  height: 32px;
+  background-color: rgb(200, 200, 200);
+  border-radius: 10%;
 }
 
-.petal {
+.circle2 {
+  margin-top: -7px;
+  background-color: rgb(200, 200, 200);
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+}
+
+.piece {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transform-origin: center 120px;
+  transform-origin: center 110px;
 
   position: absolute;
-  top: calc(50% - 140px);
-  left: calc(50% - 30px);
+  top: calc(50% - 100px);
+  left: calc(50% - 7px);
 }
 </style>
