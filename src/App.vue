@@ -2,10 +2,10 @@
 import Nav from "./components/Nav.vue";
 import {onMounted, ref} from "vue";
 import TestTools from "./components/TestTools.vue";
-import MaskComponent from "./components/Mask.vue";
 
 const navDiv = ref<HTMLDivElement | null>(null)
 const routerViewDiv = ref<HTMLDivElement | null>(null)
+const testTools = ref<HTMLDivElement | null>(null)
 
 let isScreen = false
 
@@ -54,7 +54,11 @@ function getFullScreenChange() {
       navDiv.value.style.display = 'none'
     }
     if (routerViewDiv.value) {
+      routerViewDiv.value.style.width = '100%'
       routerViewDiv.value.style.height = '100%'
+    }
+    if (testTools.value) {
+      testTools.value.style.display = 'none'
     }
   } else {
     isScreen = false
@@ -63,7 +67,11 @@ function getFullScreenChange() {
       navDiv.value.style.display = 'flex'
     }
     if (routerViewDiv.value) {
+      routerViewDiv.value.style.width = '80%'
       routerViewDiv.value.style.height = '90%'
+    }
+    if (testTools.value) {
+      testTools.value.style.display = 'block'
     }
   }
 }
@@ -105,7 +113,7 @@ const exitFullscreen = () => {
   <div class="router-view" ref="routerViewDiv">
     <router-view></router-view>
   </div>
-  <div class="test-tools">
+  <div class="test-tools" ref="testTools">
     <TestTools></TestTools>
   </div>
 </template>
