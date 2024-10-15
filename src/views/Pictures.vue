@@ -103,19 +103,20 @@ const onMessage = async (e: MessageEvent) => {
     return
   }
 
-  const data = JSON.parse(e.data)
-  if (data.name === currentObjectName) {
+  const data = e.data
+  console.log(data)
+  if (data === currentObjectName) {
     ws.send("1")
     return
   } else {
-    if (data.name && currentObjectName !== data.name) {
+    if (data && currentObjectName !== data) {
       mask.style.display = "none"
 
-      currentObjectName = data.name
+      currentObjectName = data
       const res = await service.pictures(currentObjectName)
       setSegments(res.content)
     }
-    if (!data.name) {
+    if (!data) {
       currentObjectName = ""
       mask.style.display = "block"
       animationLoop?.stop()

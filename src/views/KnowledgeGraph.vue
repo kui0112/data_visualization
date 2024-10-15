@@ -23,8 +23,8 @@ const onMessage = async (e: MessageEvent) => {
     return
   }
 
-  const data = JSON.parse(e.data)
-  if (data.name === currentObjectName) {
+  const data = e.data
+  if (data === currentObjectName) {
     ws.send("1")
     return
   } else {

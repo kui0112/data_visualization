@@ -32,13 +32,7 @@ export const pictures = async (object_name: string) => {
 
 export const ws_connect = async (): Promise<WebSocket | null> => {
     return new Promise(resolve => {
-        let count = 0
         const timerId = setInterval(() => {
-            if (count > 3) {
-                console.log("ws reconnect failed.")
-                resolve(null)
-                clearInterval(timerId)
-            }
             try {
                 const ws = new WebSocket(wsAddress("/ws"))
                 clearInterval(timerId)
@@ -46,7 +40,6 @@ export const ws_connect = async (): Promise<WebSocket | null> => {
             } catch (e) {
                 console.log("ws connect failed, reconnecting...")
             }
-            count++
         }, 1000)
     })
 }
